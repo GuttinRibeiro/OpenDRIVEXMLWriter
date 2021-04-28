@@ -11,6 +11,6 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt6 COMPONENTS Core REQUIRED)
 
-add_executable(XMLWriter opendrivedefinitions.h opendrivexmlwriter.cpp main.cpp)
+add_executable(XMLWriter opendrivedefinitions.h t_opendrive.cpp opendrivexmlwriter.cpp main.cpp)
 
 target_link_libraries(XMLWriter PRIVATE Qt6::Core)

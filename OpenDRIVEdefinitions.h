@@ -1,7 +1,5 @@
 #ifndef OPENDRIVEDEFINITIONS_H
 #define OPENDRIVEDEFINITIONS_H
-#define RHT 1
-#define LHT 0
 #include <QString>
 #include <QList>
 
@@ -10,7 +8,7 @@ typedef unsigned short int ushort;
 typedef double t_grZero;
 typedef double t_grEqZero;
 typedef QString string;
-typedef bool e_trafficRule;
+typedef string e_trafficRule;
 typedef bool e_direction;
 typedef ushort e_road_surface_CRG_mode;
 typedef ushort e_road_surface_CRG_purpose;
@@ -42,6 +40,7 @@ typedef string e_unit;
 typedef string e_road_railroad_switch_position;
 // [End] Definitions of variable types
 
+// TODO: geoReference
 struct t_header {
     ushort revMajor;
     ushort revMinor;
@@ -541,6 +540,7 @@ namespace Signal {
         string id;
         string name;
         int sequence;
+        QList<t_controller_control> control;
     };
 }
 // [End] Signal components
@@ -735,7 +735,7 @@ namespace Road {
         t_grZero length;
         string id;
         string junction;
-        e_trafficRule rule = RHT;
+        e_trafficRule rule;
         string delimiter = "road";
         t_road_surface *surface;
         t_road_lateralProfile *lateralProfile;
@@ -751,18 +751,6 @@ namespace Road {
 
 }
 // [End] Road components
-
-namespace OpenDRIVE {
-    class t_OpenDRIVE {
-    private:
-        t_header _header;
-        QList<Road::t_road> road;
-        QList<Junction::t_junction> junction;
-        QList<Signal::t_controller> controller;
-    public:
-        t_OpenDRIVE();
-    };
-}
 
 
 #endif // OPENDRIVEDEFINITIONS_H
