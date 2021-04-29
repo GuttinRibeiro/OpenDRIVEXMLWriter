@@ -2,6 +2,7 @@
 #define OPENDRIVEDEFINITIONS_H
 #include <QString>
 #include <QList>
+#include <QMap>
 
 // [Begin] Definitions of variable types
 typedef unsigned short int ushort;
@@ -14,12 +15,12 @@ typedef ushort e_road_surface_CRG_mode;
 typedef ushort e_road_surface_CRG_purpose;
 typedef double e_paramPoly3_pRange;
 typedef string e_countryCode;
-typedef int e_roadType;
+typedef string e_roadType;
 typedef float t_maxSpeed;
 typedef string e_unitSpeed;
 typedef string e_road_link_elementType;
 typedef string e_contactPoint;
-typedef char e_elementDir;
+typedef string e_elementDir;
 typedef string e_laneType;
 typedef string e_road_lanes_laneSection_lr_lane_access_rule;
 typedef string e_accessRestrictionType;
@@ -132,6 +133,10 @@ namespace Lane {
     // TODO: implementar tipos de roadMark
     struct t_road_lanes_laneSection_lr_lane_roadMark {
         const string delimiter = "roadMark";
+        double sOffset;
+        string type;
+        string material;
+        QMap<string, string> attributes;
     };
 
     struct t_road_lanes_laneSection_lr_lane_rule {
@@ -141,7 +146,8 @@ namespace Lane {
     };
 
     struct t_road_lanes_laneSection_lr_lane {
-        e_laneType lane;
+        const string delimiter = "lane";
+        e_laneType type;
         bool level;
         t_road_lanes_laneSection_lcr_lane_link *link;
         QList<t_road_lanes_laneSection_lr_lane_height> height;
@@ -154,15 +160,15 @@ namespace Lane {
     };
 
     struct t_road_lanes_laneSection_center_lane : t_road_lanes_laneSection_lr_lane {
-        const int id = 0;
+        int id;
     };
 
     struct t_road_lanes_laneSection_left_lane : t_road_lanes_laneSection_lr_lane {
-        const int id = 1;
+        int id;
     };
 
     struct t_road_lanes_laneSection_right_lane : t_road_lanes_laneSection_lr_lane {
-        const int id = -1;
+        int id;
     };
 
     struct t_roads_lanes_laneSection_center {
@@ -289,11 +295,6 @@ namespace Object {
         int id;
     };
 
-    struct t_outline_geometry {
-        QList<t_road_objects_outlines_outline_cornerLocal> cornerLocal;
-        QList<t_road_objects_outlines_outline_cornerRoad> cornerRoad;
-    };
-
     struct t_road_objects_object_outlines_outline {
         const string delimiter = "outline";
         int id;
@@ -301,9 +302,12 @@ namespace Object {
         bool closed;
         e_laneType laneType;
         e_outlineFillType fillType;
+        QList<t_road_objects_outlines_outline_cornerLocal> cornerLocal;
+        QList<t_road_objects_outlines_outline_cornerRoad> cornerRoad;
     };
 
     struct t_road_objects_object_outlines {
+        const string delimiter = "outlines";
         QList<t_road_objects_object_outlines_outline> outline;
     };
 
@@ -426,7 +430,6 @@ namespace Object {
         double length;
         double width;
         double radius;
-        t_road_objects_object_outlines_outline *outline;
         t_road_objects_object_outlines *outlines;
         t_road_objects_object_parkingSpace *parkingSpace;
         QList<t_road_objects_object_repeat> repeat;
@@ -688,17 +691,17 @@ namespace Road {
         double y;
         double hdg;
         t_grZero length;
-        t_road_planView_geometry_arc arc;
-        t_road_planView_geometry_spiral spiral;
-        t_road_planView_geometry_line line;
-        t_road_planView_geometry_poly3 poly3;
-        t_road_planView_geometry_paramPoly3 paramPoly3;
+        t_road_planView_geometry_arc *arc;
+        t_road_planView_geometry_spiral *spiral;
+        t_road_planView_geometry_line *line;
+        t_road_planView_geometry_poly3 *poly3;
+        t_road_planView_geometry_paramPoly3 *paramPoly3;
         string delimiter = "geometry";
     };
 
     struct t_road_planView {
         QList<t_road_planView_geometry> geometry;
-        string delimitr = "planView";
+        string delimiter = "planView";
     };
 
     struct t_road_type_speed {
@@ -712,16 +715,16 @@ namespace Road {
         e_roadType type;
         e_countryCode country;
         t_road_type_speed *speed;
-        string demiter = "type";
+        string delimiter = "type";
     };
 
     struct t_road_link_predecessorSucessor {
         string elementId;
         string delimiter;
         e_road_link_elementType elementType;
-        e_contactPoint *contactPoint;
-        t_grEqZero *elementS;
-        e_elementDir *elementDir;
+        e_contactPoint contactPoint;
+        t_grEqZero elementS;
+        e_elementDir elementDir;
     };
 
     struct t_road_link {
@@ -740,7 +743,7 @@ namespace Road {
         t_road_surface *surface;
         t_road_lateralProfile *lateralProfile;
         t_road_elevationProfile *elevationProfile;
-        t_road_planView *planView;
+        t_road_planView planView;
         t_road_type *type;
         t_road_link *link;
         Lane::t_road_lanes lanes;
