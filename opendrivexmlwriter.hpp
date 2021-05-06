@@ -14,6 +14,7 @@ private:
     QXmlStreamWriter *_stream;
     void writeHeader(t_header header) const;
     void writeRoads(QList<Road::t_road> roads) const;
+    void writeSignalsComponents(Signal::t_road_signals signal) const;
     void writeObjectComponents(Object::t_road_objects objects) const;
     void writeLaneComponents(Lane::t_road_lanes lane) const;
     void writeLaneSectionLaneAttributes(Lane::t_road_lanes_laneSection_lr_lane elem) const;

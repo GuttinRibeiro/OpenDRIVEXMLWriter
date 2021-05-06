@@ -41,9 +41,46 @@ void OpenDRIVEXMLWriter::writeHeader(t_header header) const {
 
 void OpenDRIVEXMLWriter::writeConnections(QList<Junction::t_junction_connection> connections) const {
     for(auto &connection : connections) {
-        _stream->writeStartElement(connection.delimiter);
-        // TODO: lane links and predecessor/sucessor
-        _stream->writeEndElement();
+        _stream->writeStartElement(connection.delimiter); // connection
+        _stream->writeAttribute("id", connection.id);
+        if(connection.type.isEmpty() == false) {
+            _stream->writeAttribute("type", connection.type);
+        }
+        if(connection.incomingRoad.isEmpty() == false) {
+            _stream->writeAttribute("incomingRoad", connection.incomingRoad);
+        }
+        if(connection.connectingRoad.isEmpty() == false) {
+            _stream->writeAttribute("connectingRoad", connection.connectingRoad);
+        }
+        if(connection.contactPoint.isEmpty() == false) {
+            _stream->writeAttribute("contactPoint", connection.contactPoint);
+        }
+
+        if(connection.predecessor != nullptr) {
+            _stream->writeStartElement("predecessor"); // predecessor
+            _stream->writeAttribute("elementType", connection.predecessor->elementType);
+            _stream->writeAttribute("elementId", connection.predecessor->elementId);
+            _stream->writeAttribute("elementS", QString::number(connection.predecessor->elementS, 'g', 17));
+            _stream->writeAttribute("elementDir", connection.predecessor->elementDir);
+            _stream->writeEndElement(); // predecessor
+        }
+
+        if(connection.successor != nullptr) {
+            _stream->writeStartElement("successor"); // successor
+            _stream->writeAttribute("elementType", connection.successor->elementType);
+            _stream->writeAttribute("elementId", connection.successor->elementId);
+            _stream->writeAttribute("elementS", QString::number(connection.successor->elementS, 'g', 17));
+            _stream->writeAttribute("elementDir", connection.successor->elementDir);
+            _stream->writeEndElement(); // successor
+        }
+
+        for(auto &link : connection.laneLink) {
+            _stream->writeStartElement(link.delimiter); // laneLink
+            _stream->writeAttribute("from", QString::number(link.from, 'g', 17));
+            _stream->writeAttribute("to", QString::number(link.to, 'g', 17));
+            _stream->writeEndElement(); // laneLink
+        }
+        _stream->writeEndElement(); // connection
     }
 }
 
@@ -53,6 +90,7 @@ void OpenDRIVEXMLWriter::writeJunctions(QList<Junction::t_junction> junctions) c
     }
 
     for(auto &junction : junctions) {
+        _stream->writeStartElement(junction.delimiter); // junction
         _stream->writeAttribute("id", junction.id);
         if(junction.name.isEmpty() == false) {
             _stream->writeAttribute("name", junction.name);
@@ -63,7 +101,30 @@ void OpenDRIVEXMLWriter::writeJunctions(QList<Junction::t_junction> junctions) c
         Q_ASSERT(junction.connection.size() > 0);
         writeConnections(junction.connection);
 
-        // TODO: write other possible information
+        // Optional element: priorities
+        for(auto &priotity : junction.priority) {
+            _stream->writeStartElement(priotity.delimiter); // priority
+            _stream->writeAttribute("high", priotity.high);
+            _stream->writeAttribute("low", priotity.low);
+            _stream->writeEndElement(); // priority
+        }
+
+        // Optional element: controller
+        for(auto &controller : junction.controller) {
+            _stream->writeStartElement(controller.delimiter); // controller
+            _stream->writeAttribute("id", controller.id);
+            if(controller.type.isEmpty() == false) {
+                _stream->writeAttribute("type", controller.type);
+            }
+            if(controller.sequence >= 0) {
+                _stream->writeAttribute("sequence", QString::number(controller.sequence));
+            }
+            _stream->writeEndElement(); // controller
+        }
+
+        // TODO: surface
+
+        _stream->writeEndElement(); // junction
     }
 }
 
@@ -370,6 +431,93 @@ void OpenDRIVEXMLWriter::writeObjectComponents(Object::t_road_objects objects) c
     // TODO: objectReference
 }
 
+void OpenDRIVEXMLWriter::writeSignalsComponents(Signal::t_road_signals signal) const {
+    // signal
+    for(auto &signal : signal.signal) {
+        _stream->writeStartElement(signal.delimiter); // signal
+        if(signal.name.isEmpty() == false) {
+            _stream->writeAttribute("name", signal.name);
+        }
+        _stream->writeAttribute("id", signal.id);
+        _stream->writeAttribute("type", signal.type);
+        _stream->writeAttribute("subtype", signal.subtype);
+        QString dynamic = signal.dynamic ? "true" : "false";
+        _stream->writeAttribute("dynamic", dynamic);
+        _stream->writeAttribute("s", QString::number(signal.s, 'g', 17));
+        _stream->writeAttribute("t", QString::number(signal.t, 'g', 17));
+        _stream->writeAttribute("orientation", signal.orientation);
+        _stream->writeAttribute("zOffset", QString::number(signal.zOffset, 'g', 17));
+        _stream->writeAttribute("hOffset", QString::number(signal.hOffset, 'g', 17));
+        _stream->writeAttribute("pitch", QString::number(signal.pitch, 'g', 17));
+        _stream->writeAttribute("roll", QString::number(signal.roll, 'g', 17));
+        if(signal.country.isEmpty() == false && signal.countryRevision.isEmpty() == false) {
+            _stream->writeAttribute("country", signal.country);
+            _stream->writeAttribute("countryRevision", signal.countryRevision);
+        }
+        if(signal.value > 0 && signal.unit.isEmpty() == false) {
+            _stream->writeAttribute("value", QString::number(signal.value, 'g', 17));
+            _stream->writeAttribute("unit", signal.unit);
+        }
+        if(signal.text.isEmpty() == false) {
+            _stream->writeAttribute("text", signal.text);
+        }
+        _stream->writeAttribute("height", QString::number(signal.height, 'g', 17));
+        _stream->writeAttribute("width", QString::number(signal.width, 'g', 17));
+
+        // TODO: reference
+        // TODO: dependency
+
+        // Validity
+        for(auto &validity : signal.validity) {
+            _stream->writeStartElement(validity.delimiter); // validity
+            _stream->writeAttribute("fromLane", QString::number(validity.fromLane, 'g', 17));
+            _stream->writeAttribute("toLane", QString::number(validity.toLane, 'g', 17));
+            _stream->writeEndElement(); //validity
+        }
+
+        // physicalPosition
+        if(signal.physicalPosition != nullptr) {
+            _stream->writeStartElement(signal.physicalPosition->positionRoad.delimiter); // positionRoad
+            _stream->writeAttribute("id", signal.physicalPosition->positionRoad.roadId);
+            _stream->writeAttribute("s", QString::number(signal.physicalPosition->positionRoad.s, 'g', 17));
+            _stream->writeAttribute("t", QString::number(signal.physicalPosition->positionRoad.t, 'g', 17));
+            _stream->writeAttribute("zOffset", QString::number(signal.physicalPosition->positionRoad.zOffset, 'g', 17));
+            _stream->writeAttribute("hOffset", QString::number(signal.physicalPosition->positionRoad.hOffset, 'g', 17));
+            _stream->writeAttribute("pitch", QString::number(signal.physicalPosition->positionRoad.pitch, 'g', 17));
+            _stream->writeAttribute("roll", QString::number(signal.physicalPosition->positionRoad.roll, 'g', 17));
+            _stream->writeEndElement(); // positionRoad
+
+            _stream->writeStartElement(signal.physicalPosition->positionInertial.delimiter); // positionInertial
+            _stream->writeAttribute("x", QString::number(signal.physicalPosition->positionInertial.x, 'g', 17));
+            _stream->writeAttribute("y", QString::number(signal.physicalPosition->positionInertial.y, 'g', 17));
+            _stream->writeAttribute("z", QString::number(signal.physicalPosition->positionInertial.z, 'g', 17));
+            _stream->writeAttribute("hdg", QString::number(signal.physicalPosition->positionInertial.hdg, 'g', 17));
+            _stream->writeAttribute("pitch", QString::number(signal.physicalPosition->positionInertial.pitch, 'g', 17));
+            _stream->writeAttribute("roll", QString::number(signal.physicalPosition->positionInertial.roll, 'g', 17));
+            _stream->writeEndElement(); // positionInertials
+        }
+
+        _stream->writeEndElement(); // signal
+    }
+
+    // signal reference
+    for(auto &reference : signal.signalReference) {
+        _stream->writeStartElement(reference.delimiter); // signalReference
+        _stream->writeAttribute("id", reference.id);
+        _stream->writeAttribute("s", QString::number(reference.s, 'g', 17));
+        _stream->writeAttribute("t", QString::number(reference.t, 'g', 17));
+        _stream->writeAttribute("orientation", reference.orientation);
+        // Validity
+        for(auto &validity : reference.validity) {
+            _stream->writeStartElement(validity.delimiter); // validity
+            _stream->writeAttribute("fromLane", QString::number(validity.fromLane, 'g', 17));
+            _stream->writeAttribute("toLane", QString::number(validity.toLane, 'g', 17));
+            _stream->writeEndElement(); //validity
+        }
+        _stream->writeEndElement(); // signalReference
+    }
+}
+
 void OpenDRIVEXMLWriter::writeRoads(QList<Road::t_road> roads) const {
     Q_ASSERT(roads.isEmpty() == false);
     for(auto &road : roads) {
@@ -497,6 +645,13 @@ void OpenDRIVEXMLWriter::writeRoads(QList<Road::t_road> roads) const {
         }
 
         // Optional field: signals
+        if(road.signal != nullptr) {
+            _stream->writeStartElement(road.signal->delimiter); // signals
+            writeSignalsComponents(*road.signal);
+            _stream->writeEndElement(); //signals
+        }
+
+        // TODO: railroads
     }
     _stream->writeEndElement(); // roads
 }

@@ -202,7 +202,7 @@ namespace Lane {
     };
 
     struct t_road_objects_object_laneValidity {
-        const string delimiter = "laneValidity";
+        const string delimiter = "validity";
         int fromLane;
         int toLane;
     };
@@ -233,7 +233,7 @@ namespace Junction {
         e_contactPoint contactPoint;
         QList<t_junction_connection_laneLink> laneLink;
         t_junction_predecessorSucessor *predecessor;
-        t_junction_predecessorSucessor *sucessor;
+        t_junction_predecessorSucessor *successor;
     };
 
     struct t_junction_priority {
@@ -500,7 +500,7 @@ namespace Signal {
         e_orientation orientation;
         double zOffset;
         e_countryCode country;
-        string contryRevision;
+        string countryRevision;
         string type;
         string subtype;
         double value;
